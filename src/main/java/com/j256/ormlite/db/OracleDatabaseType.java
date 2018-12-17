@@ -61,16 +61,6 @@ public class OracleDatabaseType extends BaseDatabaseType {
 	}
 
 	@Override
-	protected void appendByteArrayType(StringBuilder sb, FieldType fieldType, int fieldWidth) {
-		sb.append("LONG RAW");
-	}
-
-	@Override
-	protected void appendSerializableType(StringBuilder sb, FieldType fieldType, int fieldWidth) {
-		sb.append("LONG RAW");
-	}
-
-	@Override
 	protected void appendBigDecimalNumericType(StringBuilder sb, FieldType fieldType, int fieldWidth) {
 		// from stew
 		sb.append("NUMBER(*," + fieldWidth + ")");
@@ -104,6 +94,20 @@ public class OracleDatabaseType extends BaseDatabaseType {
 				}
 			default:
 				return super.getFieldConverter(dataPersister, fieldType);
+		}
+	}
+
+	@Override
+	protected void appendDefaultValue(StringBuilder sb, FieldType fieldType, Object defaultValue) {
+		switch (fieldType.getSqlType()) {
+			case DATE:
+				sb.append("TO_TIMESTAMP(");
+				appendEscapedWord(sb, defaultValue.toString());
+				sb.append(", 'YYYY-MM-DD HH24:MI:SS.FF')");
+				break;
+
+			default:
+				super.appendDefaultValue(sb, fieldType, defaultValue);
 		}
 	}
 
@@ -162,9 +166,18 @@ public class OracleDatabaseType extends BaseDatabaseType {
 	}
 
 	@Override
-	public boolean isOffsetSqlSupported() {
-		// there is no easy way to do this in this database type
-		return false;
+	public void appendLimitValue(StringBuilder sb, long limit, Long offset) {
+		if (offset != null) {
+			sb.append("OFFSET ").append(offset).append( " ROWS FETCH NEXT ");
+		} else {
+			sb.append("FETCH FIRST ");
+		}
+		sb.append(limit).append(" ROWS ONLY ");
+	}
+
+	@Override
+	public boolean isOffsetLimitArgument() {
+		return true;
 	}
 
 	@Override
@@ -183,5 +196,12 @@ public class OracleDatabaseType extends BaseDatabaseType {
 	public boolean isEntityNamesMustBeUpCase() {
 		// from stew
 		return true;
+	}
+
+	@Override
+	public boolean isNestedSavePointsSupported() {
+		// This DB does support nested transactions in general
+		// but the driver does not support the Connection.releaseSavepoint operation.
+		return false;
 	}
 }
