@@ -21,7 +21,7 @@ public class SqlServerDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 
 	@Override
 	protected void setDatabaseParams() throws SQLException {
-		databaseUrl = "jdbc:sqlserver:db";
+		databaseUrl = "jdbc:sqlserver://localhost";
 		connectionSource = new JdbcConnectionSource(DEFAULT_DATABASE_URL);
 		databaseType = new SqlServerDatabaseType();
 	}
