@@ -50,6 +50,23 @@ public class PostgresDatabaseType extends BaseDatabaseType {
 		sb.append("BYTEA");
 	}
 
+
+	@Override
+	protected void appendIntegerType(StringBuilder sb, FieldType fieldType, int fieldWidth) {
+		sb.append(fieldType.isGeneratedId() ? "SERIAL" : "INTEGER");
+	}
+
+	@Override
+	protected void appendLongType(StringBuilder sb, FieldType fieldType, int fieldWidth) {
+		sb.append(fieldType.isGeneratedId() ? "BIGSERIAL" : "BIGINT");
+	}
+
+	@Override
+	protected void configureGeneratedId(String tableName, StringBuilder sb, FieldType fieldType, List<String> statementsBefore, List<String> statementsAfter, List<String> additionalArgs, List<String> queriesAfter) {
+		// Don't need to do anything extra. This is handled by appendIntegerType and appendLongType.
+		configureId(sb, fieldType, statementsBefore, additionalArgs, queriesAfter);
+	}
+
 	@Override
 	protected void configureGeneratedIdSequence(StringBuilder sb, FieldType fieldType, List<String> statementsBefore,
 			List<String> additionalArgs, List<String> queriesAfter) {
@@ -96,8 +113,9 @@ public class PostgresDatabaseType extends BaseDatabaseType {
 	}
 
 	@Override
-	public boolean isIdSequenceNeeded() {
-		return true;
+	public boolean isAllowGeneratedIdInsertSupported() {
+		// Like Derby, we cannot insert NULL into generated IDs.
+		return false;
 	}
 
 	@Override
@@ -111,6 +129,11 @@ public class PostgresDatabaseType extends BaseDatabaseType {
 		// this is word and not entity unfortunately
 		appendEscapedWord(sb, sequenceName);
 		sb.append(')');
+	}
+
+	@Override
+	public void appendInsertNoColumns(StringBuilder sb) {
+		sb.append("VALUES(DEFAULT)");
 	}
 
 	@Override

@@ -50,6 +50,25 @@ public class PostgresDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 		assertEquals("\"" + schema + "\".\"" + table + "\"", TestUtils.appendEscapedEntityName(databaseType, word));
 	}
 
+	@Test
+	public void testGeneratedIdBuilt() throws Exception {
+		if (connectionSource == null) {
+			return;
+		}
+		TableInfo<GeneratedId, Integer> tableInfo =
+				new TableInfo<GeneratedId, Integer>(connectionSource, null, GeneratedId.class);
+		assertEquals(2, tableInfo.getFieldTypes().length);
+		StringBuilder sb = new StringBuilder();
+		List<String> additionalArgs = new ArrayList<String>();
+		List<String> statementsBefore = new ArrayList<String>();
+		databaseType.appendColumnArg(null, sb, tableInfo.getFieldTypes()[0], additionalArgs, statementsBefore, null,
+				null);
+		databaseType.addPrimaryKeySql(tableInfo.getFieldTypes(), additionalArgs, statementsBefore, null, null);
+		assertTrue(sb.toString().contains(" SERIAL "));
+		assertEquals(1, additionalArgs.size());
+		assertTrue(additionalArgs.get(0).contains("PRIMARY KEY"));
+	}
+
 	@Test(expected = IllegalStateException.class)
 	public void testBadGeneratedId() throws Exception {
 		if (connectionSource == null) {
@@ -80,8 +99,8 @@ public class PostgresDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 		if (connectionSource == null) {
 			return;
 		}
-		Field field = GeneratedId.class.getField("id");
-		FieldType fieldType = FieldType.createFieldType(connectionSource, "foo", field, GeneratedId.class);
+		Field field = GeneratedIdSequence.class.getField("genId");
+		FieldType fieldType = FieldType.createFieldType(connectionSource, "foo", field, GeneratedIdSequence.class);
 		List<String> statementsBefore = new ArrayList<String>();
 		List<String> statementsAfter = new ArrayList<String>();
 		databaseType.dropColumnArg(fieldType, statementsBefore, statementsAfter);
@@ -109,32 +128,6 @@ public class PostgresDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 		assertTrue(sb.toString().contains(" DEFAULT NEXTVAL('\"" + GENERATED_ID_SEQ + "\"')"));
 		assertEquals(1, statementsBefore.size());
 		assertTrue(statementsBefore.get(0).contains(GENERATED_ID_SEQ));
-		assertEquals(1, additionalArgs.size());
-		assertTrue(additionalArgs.get(0).contains("PRIMARY KEY"));
-		assertEquals(0, queriesAfter.size());
-	}
-
-	@Test
-	public void testGeneratedIdSequenceAutoName() throws Exception {
-		if (connectionSource == null) {
-			return;
-		}
-		TableInfo<GeneratedIdSequenceAutoName, Integer> tableInfo = new TableInfo<GeneratedIdSequenceAutoName, Integer>(
-				connectionSource, null, GeneratedIdSequenceAutoName.class);
-		assertEquals(2, tableInfo.getFieldTypes().length);
-		FieldType idField = tableInfo.getFieldTypes()[0];
-		StringBuilder sb = new StringBuilder();
-		List<String> additionalArgs = new ArrayList<String>();
-		List<String> statementsBefore = new ArrayList<String>();
-		List<String> queriesAfter = new ArrayList<String>();
-		databaseType.appendColumnArg(null, sb, idField, additionalArgs, statementsBefore, null, queriesAfter);
-		databaseType.addPrimaryKeySql(new FieldType[] { idField }, additionalArgs, statementsBefore, null,
-				queriesAfter);
-		String seqName = databaseType
-				.generateIdSequenceName(GeneratedIdSequenceAutoName.class.getSimpleName().toLowerCase(), idField);
-		assertTrue(sb.toString().contains(" DEFAULT NEXTVAL('\"" + seqName + "\"')"));
-		assertEquals(1, statementsBefore.size());
-		assertTrue(statementsBefore.get(0).contains(seqName));
 		assertEquals(1, additionalArgs.size());
 		assertTrue(additionalArgs.get(0).contains("PRIMARY KEY"));
 		assertEquals(0, queriesAfter.size());
