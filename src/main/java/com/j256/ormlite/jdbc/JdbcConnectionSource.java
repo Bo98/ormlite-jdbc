@@ -38,6 +38,7 @@ public class JdbcConnectionSource extends BaseConnectionSource implements Connec
 	protected DatabaseType databaseType;
 	protected boolean initialized = false;
 	private static DatabaseConnectionProxyFactory connectionProxyFactory;
+	private ThreadLocal<Integer> saveCounter = new ThreadLocal<Integer>();
 
 	/**
 	 * Constructor for Spring type wiring if you are using the set methods. If you are using Spring then your should
@@ -200,12 +201,25 @@ public class JdbcConnectionSource extends BaseConnectionSource implements Connec
 	@SuppressWarnings("unused")
 	public boolean saveSpecialConnection(DatabaseConnection connection) throws SQLException {
 		// noop since this is a single connection source
-		return true;
+		Integer prevCount = saveCounter.get();
+		if (prevCount == null) {
+			saveCounter.set(1);
+			return true;
+		} else {
+			saveCounter.set(saveCounter.get() + 1);
+			return false;
+		}
 	}
 
 	@Override
 	public void clearSpecialConnection(DatabaseConnection connection) {
 		// noop since this is a single connection source
+		Integer prevCount = saveCounter.get();
+		if (prevCount == null || prevCount <= 1) {
+			saveCounter.remove();
+		} else {
+			saveCounter.set(prevCount - 1);
+		}
 	}
 
 	@Override

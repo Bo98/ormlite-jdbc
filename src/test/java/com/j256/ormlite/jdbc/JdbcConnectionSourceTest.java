@@ -218,6 +218,24 @@ public class JdbcConnectionSourceTest extends BaseCoreTest {
 	}
 
 	@Test
+	public void testNestedSaveAndClear() throws Exception {
+		JdbcConnectionSource sds = new JdbcConnectionSource("jdbc:h2:mem:baz");
+		DatabaseConnection conn1 = sds.getReadOnlyConnection(null);
+		DatabaseConnection conn2 = sds.getReadOnlyConnection(null);
+		assertSame(conn1, conn2);
+		assertTrue(sds.saveSpecialConnection(conn1));
+		assertFalse(sds.saveSpecialConnection(conn1));
+		sds.clearSpecialConnection(conn1);
+		assertFalse(sds.saveSpecialConnection(conn1));
+		sds.clearSpecialConnection(conn1);
+		sds.clearSpecialConnection(conn1);
+		assertTrue(sds.saveSpecialConnection(conn1));
+		sds.clearSpecialConnection(conn1);
+		sds.releaseConnection(conn1);
+		sds.close();
+	}
+
+	@Test
 	public void testSetDatabaseType() throws Exception {
 		JdbcConnectionSource sds = new JdbcConnectionSource();
 		sds.setUrl("jdbc:h2:mem:baz");
