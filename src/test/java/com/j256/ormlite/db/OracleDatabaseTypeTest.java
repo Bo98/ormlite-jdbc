@@ -12,8 +12,11 @@ import static org.junit.Assert.assertTrue;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.stmt.QueryBuilder;
 import org.junit.Test;
 
 import com.j256.ormlite.TestUtils;
@@ -26,7 +29,7 @@ public class OracleDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 
 	@Override
 	protected void setDatabaseParams() throws SQLException {
-		databaseUrl = "jdbc:oracle:ormliteoracle";
+		databaseUrl = "jdbc:oracle:thin:@localhost:1521:ormliteoracle";
 		connectionSource = new JdbcConnectionSource(DEFAULT_DATABASE_URL);
 		databaseType = new OracleDatabaseType();
 	}
@@ -41,6 +44,27 @@ public class OracleDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 	public void testEscapedEntityName() {
 		String word = "word";
 		assertEquals("\"" + word + "\"", TestUtils.appendEscapedEntityName(databaseType, word));
+	}
+
+	@Override
+	@Test
+	public void testLimitFormat() throws Exception {
+		TableInfo<StringId, String> tableInfo = new TableInfo<StringId, String>(connectionSource, null, StringId.class);
+		QueryBuilder<StringId, String> qb = new QueryBuilder<StringId, String>(databaseType, tableInfo, null);
+		long limit = 1232;
+		qb.limit(limit);
+		String query = qb.prepareStatementString();
+		assertTrue(query + " should contain FETCH FIRST " + limit + " ROWS ONLY", query.contains(" FETCH FIRST " + limit + " ROWS ONLY "));
+
+	}
+
+	@Test
+	public void testDefaultValue() throws SQLException {
+		TableInfo<DefaultDateEntity, Void> tableInfo = new TableInfo<DefaultDateEntity, Void>(connectionSource, null, DefaultDateEntity.class);
+		StringBuilder sb = new StringBuilder();
+		databaseType.appendColumnArg(null, sb, tableInfo.getFieldTypes()[0], null, null, null, null);
+		String output = sb.toString();
+		assertTrue(output + " should contain TO_TIMESTAMP", output.contains(" DEFAULT TO_TIMESTAMP("));
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -140,14 +164,6 @@ public class OracleDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 	}
 
 	@Test
-	public void testObject() {
-		OracleDatabaseType dbType = new OracleDatabaseType();
-		StringBuilder sb = new StringBuilder();
-		dbType.appendByteArrayType(sb, null, 0);
-		assertEquals("LONG RAW", sb.toString());
-	}
-
-	@Test
 	public void testSelectNextVal() {
 		OracleDatabaseType dbType = new OracleDatabaseType();
 		StringBuilder sb = new StringBuilder();
@@ -156,9 +172,19 @@ public class OracleDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 		assertEquals("SELECT \"" + sequenceName + "\".nextval FROM dual", sb.toString());
 	}
 
-	@Override
 	@Test
-	public void testOffsetSupport() {
-		assertFalse(databaseType.isOffsetSqlSupported());
+	public void testIsOffsetLimitArgument() {
+		assertTrue(databaseType.isOffsetLimitArgument());
+	}
+
+	@Test
+	public void testIsNestedSavePointsSupported() {
+		assertFalse(databaseType.isNestedSavePointsSupported());
+	}
+
+
+	private static class DefaultDateEntity {
+		@DatabaseField(defaultValue = "2016-02-29 12:34:56.789012")
+		Date dateField;
 	}
 }
