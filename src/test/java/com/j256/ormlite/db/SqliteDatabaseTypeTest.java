@@ -120,11 +120,6 @@ public class SqliteDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 		assertTrue(databaseType.isOffsetLimitArgument());
 	}
 
-	@Test
-	public void testIsNestedSavePointsSupported() {
-		assertFalse(databaseType.isNestedSavePointsSupported());
-	}
-
 	@Test(expected = IllegalStateException.class)
 	public void testfIsNestedSavePointsSupported() {
 		databaseType.appendOffsetValue(null, 0);

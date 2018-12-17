@@ -159,6 +159,13 @@ public class SqlServerDatabaseType extends BaseDatabaseType {
 		return true;
 	}
 
+	@Override
+	public boolean isNestedSavePointsSupported() {
+		// This DB does support nested transactions in general
+		// but the driver does not support the Connection.releaseSavepoint operation.
+		return false;
+	}
+
 	/**
 	 * Conversion from the byte Java field to the SMALLINT Jdbc type because TINYINT looks to be 0-255 and unsigned.
 	 */

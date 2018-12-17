@@ -30,4 +30,9 @@ public class DerbyClientServerDatabaseType extends DerbyEmbeddedDatabaseType {
 	public String getDatabaseName() {
 		return DATABASE_NAME;
 	}
+
+	@Override
+	public boolean isNestedSavePointsSupported() {
+		return false;
+	}
 }

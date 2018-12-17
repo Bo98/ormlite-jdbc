@@ -148,4 +148,9 @@ public class SqlServerDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 		assertEquals(1, additionalArgs.size());
 		assertTrue(additionalArgs.get(0).contains("PRIMARY KEY"));
 	}
+
+	@Test
+	public void testIsNestedSavePointsSupported() {
+		assertFalse(databaseType.isNestedSavePointsSupported());
+	}
 }
