@@ -630,6 +630,9 @@ public class JdbcQueryBuilderTest extends BaseJdbcTest {
 
 	@Test
 	public void testOffsetWithLimit() throws Exception {
+		if (!databaseType.isOffsetSqlSupported())
+			return;
+
 		Dao<Foo, Object> dao = createDao(Foo.class, true);
 		Foo foo1 = new Foo();
 		foo1.id = "stuff1";
@@ -651,6 +654,9 @@ public class JdbcQueryBuilderTest extends BaseJdbcTest {
 
 	@Test
 	public void testOffsetNoLimit() throws Exception {
+		if (!databaseType.isOffsetSqlSupported())
+			return;
+
 		Dao<Foo, Object> dao = createDao(Foo.class, true);
 		Foo foo1 = new Foo();
 		foo1.id = "stuff1";
@@ -664,9 +670,11 @@ public class JdbcQueryBuilderTest extends BaseJdbcTest {
 		qb.offset(1L);
 		try {
 			dao.query(qb.prepare());
-			fail("expected exception");
+			if (databaseType.isOffsetLimitArgument())
+				fail("expected exception");
 		} catch (SQLException e) {
 			// expected
+			assertTrue(databaseType.isOffsetLimitArgument());
 		}
 	}
 

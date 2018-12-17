@@ -19,7 +19,7 @@ public class Db2DatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 
 	@Override
 	protected void setDatabaseParams() throws SQLException {
-		databaseUrl = "jdbc:db2:ormlitedb2";
+		databaseUrl = "jdbc:db2://localhost:50000/ormlitedb2";
 		connectionSource = new JdbcConnectionSource(DEFAULT_DATABASE_URL);
 		databaseType = new Db2DatabaseType();
 	}

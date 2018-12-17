@@ -17,7 +17,7 @@ public class MysqlDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 
 	@Override
 	protected void setDatabaseParams() throws SQLException {
-		databaseUrl = "jdbc:mysql:ormlite";
+		databaseUrl = "jdbc:mysql://localhost:3306/ormlite";
 		connectionSource = new JdbcConnectionSource(DEFAULT_DATABASE_URL);
 		databaseType = new MysqlDatabaseType();
 	}

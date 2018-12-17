@@ -27,7 +27,17 @@ public class JdbcRawResultsImplTest extends BaseJdbcTest {
 		final String idName = "SOME_ID";
 		final String valName = "SOME_VAL";
 		final AtomicBoolean gotResult = new AtomicBoolean(false);
-		GenericRawResults<Object> results = dao.queryRaw("select id as " + idName + ", val as " + valName + " from foo",
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ");
+		databaseType.appendEscapedEntityName(sb, "id");
+		sb.append(" as ");
+		databaseType.appendEscapedEntityName(sb, idName);
+		sb.append(", ");
+		databaseType.appendEscapedEntityName(sb, "val");
+		sb.append(" as ");
+		databaseType.appendEscapedEntityName(sb, valName);
+		sb.append(" from foo");
+		GenericRawResults<Object> results = dao.queryRaw(sb.toString(),
 				new RawRowMapper<Object>() {
 					@Override
 					public Object mapRow(String[] columnNames, String[] resultColumns) {

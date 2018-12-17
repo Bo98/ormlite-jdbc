@@ -24,7 +24,7 @@ public class SqliteDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 
 	@Override
 	protected void setDatabaseParams() throws SQLException {
-		databaseUrl = "jdbc:sqlite:";
+		databaseUrl = "jdbc:sqlite:target/ormlite.db";
 		connectionSource = new JdbcConnectionSource(DEFAULT_DATABASE_URL);
 		databaseType = new SqliteDatabaseType();
 	}

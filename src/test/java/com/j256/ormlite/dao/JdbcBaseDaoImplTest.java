@@ -9,6 +9,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
@@ -999,6 +1000,11 @@ public class JdbcBaseDaoImplTest extends BaseJdbcTest {
 				|| databaseTypeClassName.equals("SqliteAndroidDatabaseType")) {
 			// some databases have miniscule default precision
 			foo.bigDecimalNumeric = new BigDecimal("12");
+		} else if (databaseTypeClassName.equals("DerbyClientServerDatabaseType")
+				|| databaseTypeClassName.equals("HsqldbDatabaseType")
+				|| databaseTypeClassName.equals("MariaDbDatabaseType")
+				|| databaseTypeClassName.equals("OracleDatabaseType")) {
+			foo.bigDecimalNumeric = new BigDecimal("12645");
 		} else {
 			// some databases have miniscule default precision
 			foo.bigDecimalNumeric = new BigDecimal("12645.34324234");
@@ -1044,6 +1050,11 @@ public class JdbcBaseDaoImplTest extends BaseJdbcTest {
 				|| databaseTypeClassName.equals("SqliteAndroidDatabaseType")) {
 			// some databases have miniscule default precision
 			bigDecimalNumericVal = new BigDecimal("12");
+		} else if (databaseTypeClassName.equals("DerbyClientServerDatabaseType")
+				|| databaseTypeClassName.equals("HsqldbDatabaseType")
+				|| databaseTypeClassName.equals("MariaDbDatabaseType")
+				|| databaseTypeClassName.equals("OracleDatabaseType")) {
+			bigDecimalNumericVal = new BigDecimal("12645");
 		} else {
 			// some databases have miniscule default precision
 			bigDecimalNumericVal = new BigDecimal("12645.3432234");
@@ -1085,7 +1096,7 @@ public class JdbcBaseDaoImplTest extends BaseJdbcTest {
 		checkQueryResult(allDao, qb, allTypes, AllTypes.DATE_FIELD_NAME, dateVal, true);
 		checkQueryResult(allDao, qb, allTypes, AllTypes.DATE_LONG_FIELD_NAME, dateLongVal, true);
 		checkQueryResult(allDao, qb, allTypes, AllTypes.DATE_STRING_FIELD_NAME, dateStringVal, true);
-		if (!databaseType.getDatabaseName().equals("Derby")) {
+		if (!databaseType.getDatabaseName().startsWith("Derby")) {
 			checkQueryResult(allDao, qb, allTypes, AllTypes.CHAR_FIELD_NAME, charVal, true);
 		}
 		checkQueryResult(allDao, qb, allTypes, AllTypes.BYTE_FIELD_NAME, byteVal, true);
@@ -1151,7 +1162,7 @@ public class JdbcBaseDaoImplTest extends BaseJdbcTest {
 		numberMins.intField = Integer.MIN_VALUE;
 		numberMins.longField = Long.MIN_VALUE;
 		numberMins.floatField = -1.0e+37F;
-		numberMins.doubleField = -1.0e+307;
+		numberMins.doubleField = databaseType.getDatabaseName().equals("Oracle") ? -1.0e+125 : -1.0e+307;
 		assertEquals(1, numberDao.create(numberMins));
 
 		NumberTypes numberMins2 = new NumberTypes();
@@ -1161,7 +1172,7 @@ public class JdbcBaseDaoImplTest extends BaseJdbcTest {
 		numberMins2.longField = Long.MIN_VALUE;
 		numberMins2.floatField = 1.0e-37F;
 		// derby couldn't take 1.0e-307 for some reason
-		numberMins2.doubleField = 1.0e-306;
+		numberMins2.doubleField = databaseType.getDatabaseName().equals("Oracle") ? 1.0e-130 : 1.0e-306;
 		assertEquals(1, numberDao.create(numberMins2));
 
 		NumberTypes numberMaxs = new NumberTypes();
@@ -1170,7 +1181,7 @@ public class JdbcBaseDaoImplTest extends BaseJdbcTest {
 		numberMaxs.intField = Integer.MAX_VALUE;
 		numberMaxs.longField = Long.MAX_VALUE;
 		numberMaxs.floatField = 1.0e+37F;
-		numberMaxs.doubleField = 1.0e+307;
+		numberMaxs.doubleField = databaseType.getDatabaseName().equals("Oracle") ? 1.0e+125 : 1.0e+307;
 		assertEquals(1, numberDao.create(numberMaxs));
 		assertEquals(1, numberDao.refresh(numberMaxs));
 
@@ -3464,8 +3475,10 @@ public class JdbcBaseDaoImplTest extends BaseJdbcTest {
 
 			try {
 				closeConnectionSource();
-			} catch (SQLException e) {
+			} catch (IOException e) {
 				// ignore any exceptions (stupid derby)
+				dao.rollBack(conn);
+				closeConnectionSource();
 			}
 			conn = null;
 			DaoManager.clearCache();

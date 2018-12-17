@@ -17,7 +17,7 @@ public class MariaDbDatabaseTypeTest extends BaseJdbcDatabaseTypeTest {
 
 	@Override
 	protected void setDatabaseParams() throws SQLException {
-		databaseUrl = "jdbc:mariadb:ormlite";
+		databaseUrl = "jdbc:mariadb://localhost:3306/ormlite";
 		connectionSource = new JdbcConnectionSource(DEFAULT_DATABASE_URL);
 		databaseType = new MariaDbDatabaseType();
 	}
