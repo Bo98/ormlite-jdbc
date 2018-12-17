@@ -173,7 +173,7 @@ public class SqlServerDatabaseType extends BaseDatabaseType {
 		@Override
 		public SqlType getSqlType() {
 			// store it as a short
-			return SqlType.BYTE;
+			return SqlType.SHORT;
 		}
 
 		@Override
