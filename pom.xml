@@ -367,9 +367,9 @@
 
 		<!-- test dependencies -->
 		<dependency>
-			<groupId>com.j256.ormlite</groupId>
+			<groupId>com.github.Bo98</groupId>
 			<artifactId>ormlite-core</artifactId>
-			<version>${ormlite-version}</version>
+			<version>bo-SNAPSHOT</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
