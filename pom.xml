@@ -58,6 +58,12 @@
 			<timezone>-5</timezone>
 		</developer>
 	</developers>
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 	<profiles>
 		<profile>
 			<id>st</id>
@@ -340,9 +346,9 @@
 	<dependencies>
 		<!-- main dependencies -->
 		<dependency>
-			<groupId>com.j256.ormlite</groupId>
+			<groupId>com.github.Bo98</groupId>
 			<artifactId>ormlite-core</artifactId>
-			<version>${ormlite-version}</version>
+			<version>bo-SNAPSHOT</version>
 		</dependency>
 
 		<!-- provided dependencies for optional features -->
